@@ -1,0 +1,353 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>E-Commerce Website</title>
+    	<link rel="stylesheet" type="text/css"  href="style.css">
+    	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	</head>
+
+	<body id="body">
+		<div class="header" id="header" onclick="location.reload();">
+      <h1>Your Online Market</h1>
+    </div>
+    <div id="shoppingCartWithNumber">
+      <span id="num_of_item"></span>
+      <img src="ShoppingCart.png" alt="Shopping Cart" id="shoppingCart" onclick="displayCartContent();">
+      
+    </div>
+    
+      
+
+		<div class="category col-3" id="categoryDiv">
+			<ul id=categoryList>
+			</ul>	
+		</div>
+
+		<div class="items col-9" id="items">
+			<ul id="itemList" class="default">
+			
+			</ul>
+
+			<div class="footer" id="footer">
+				<a id="previousPage" onclick="loadPreviousPage();">&lt Previous Page</a>
+				<span id="pageSelection">
+					page
+					<input type="number" name="page" id="pageList" min="1" max="3" 
+					onchange="loadSpecifiedPage();" value = "1">
+					of
+					<span id="totalPage"></span>
+				</span>
+				<a id="nextPage" onclick="loadNextPage();">Next Page &gt</a>
+			</div>
+		</div>
+
+
+
+
+		<script>
+			$("body").on({
+				load: loadCategories(),
+				load: loadInitialPage(),
+        load: loadCartNumber()
+			})
+      
+			function loadCategories(){
+      			var xmlhttp;    
+      			if (window.XMLHttpRequest){ 
+         			xmlhttp = new XMLHttpRequest();
+      			}else{ 
+         			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+      			}
+      			xmlhttp.onreadystatechange = function(){
+      				if ( xmlhttp.readyState == 4 && xmlhttp.status ==200){
+          				txt="";
+          				json=JSON.parse(xmlhttp.responseText);
+          				for (i=0; i<json.length; i++) {
+          					txt=txt + "<li class='itemOnShelf' onclick=\"loadCategoryFirstPage(this);\">"+json[i]+"</li>";
+          				}
+          				document.getElementById("categoryList").innerHTML=txt;
+   	   				}
+   				}
+				xmlhttp.open("GET","handleCategoryDisplay.php?show=all", true);
+				xmlhttp.send();
+			}
+			function loadInitialPage(){
+				var xmlhttp;    
+      			if (window.XMLHttpRequest){ 
+         			xmlhttp = new XMLHttpRequest();
+      			}else{ 
+         			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+      			}
+      			xmlhttp.onreadystatechange = function(){
+      				if ( xmlhttp.readyState == 4 && xmlhttp.status ==200){
+          				txt="";
+          				json=JSON.parse(xmlhttp.responseText);
+          				for (i=0; i<json.items.length; i++) {
+          					txt=txt + "<li class='itemOnShelf' id='"+json.items[i]['itemID']+"'>";
+                    //txt=txt + "<li id='2'>";
+          					txt=txt + "<img src='"+json.items[i]['itemImage']+"'>";
+          					txt=txt + "<p class='item_name'>Name: "+json.items[i]['itemName']+"</p>";
+          					txt=txt + "<p class='item_price'>Price: $"+json.items[i]['itemPrice']+"</p>";
+          					txt=txt + "<p class='item_discription'>Discription: "+json.items[i]['itemDescription']+"</p>";
+                    txt=txt + "<input type='submit' onclick=\"addToCart(this);\" value='Add to Cart'>";
+							txt=txt + "</li>";
+          				}
+          				document.getElementById("itemList").innerHTML=txt;
+           				document.getElementById("totalPage").innerHTML=json.numOfPages;
+            				document.getElementById("itemList").className="Baverage";
+   	   				}
+   	   				
+   				}
+   				xmlhttp.open("GET","handleItemDisplay.php?category=Baverage&page=1", true);
+				xmlhttp.send();
+			}
+			function loadCategoryFirstPage(elem) {
+				var xmlhttp;    
+      			if (window.XMLHttpRequest){ 
+         			xmlhttp = new XMLHttpRequest();
+      			}else{ 
+         			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+      			}
+      			xmlhttp.onreadystatechange = function(){
+      				if ( xmlhttp.readyState == 4 && xmlhttp.status ==200){
+          				txt="";
+          				json=JSON.parse(xmlhttp.responseText);
+          				for (i=0; i<json.items.length; i++) {
+          					txt=txt + "<li class='itemOnShelf' id='"+json.items[i]['itemID']+"'>";
+          					txt=txt + "<img src='"+json.items[i]['itemImage']+"'>";
+          					txt=txt + "<p class='item_name'>Name: "+json.items[i]['itemName']+"</p>";
+          					txt=txt + "<p class='item_price'>Price: $"+json.items[i]['itemPrice']+"</p>";
+          					txt=txt + "<p class='item_discription'>Discription: "+json.items[i]['itemDescription']+"</p>";
+                    txt=txt + "<input type='submit' onclick=\"addToCart(this);\" value='Add to Cart'>";
+							txt=txt + "</li>";
+          				}
+          				document.getElementById("itemList").innerHTML=txt;
+          				document.getElementById("itemList").className=elem.innerHTML;
+          				document.getElementById("totalPage").innerHTML=json.numOfPages;
+          				document.getElementById("pageList").value=1;
+   	   				}
+   				}
+				xmlhttp.open("GET","handleItemDisplay.php?category="+elem.innerHTML+"&page=1", true);
+				xmlhttp.send();
+			}
+
+			function loadPreviousPage() {
+				var currentPage=document.getElementById("pageList").value;
+				if (currentPage != "1") {
+					var currentCategory = document.getElementById("itemList").className;
+					var targetPage = Number(currentPage)-1;
+					var xmlhttp;    
+      				if (window.XMLHttpRequest){ 
+         				xmlhttp = new XMLHttpRequest();
+      				}else{ 
+         				xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+      				}
+      				xmlhttp.onreadystatechange = function(){
+      					if ( xmlhttp.readyState == 4 && xmlhttp.status ==200){
+          					txt="";
+          					json=JSON.parse(xmlhttp.responseText);
+          					for (i=0; i<json.items.length; i++) {
+          						txt=txt + "<li class='itemOnShelf' id='"+json.items[i]['itemID']+"'>";
+          						txt=txt + "<img src='"+json.items[i]['itemImage']+"'>";
+          						txt=txt + "<p class='item_name'>Name: "+json.items[i]['itemName']+"</p>";
+          						txt=txt + "<p class='item_price'>Price: $"+json.items[i]['itemPrice']+"</p>";
+          						txt=txt + "<p class='item_discription'>Discription: "+json.items[i]['itemDescription']+"</p>";
+                      txt=txt + "<input type='submit' onclick=\"addToCart(this);\" value='Add to Cart'>";
+								txt=txt + "</li>";
+          					}
+          					document.getElementById("itemList").innerHTML=txt;
+          					document.getElementById("totalPage").innerHTML=json.numOfPages;
+                   			document.getElementById("pageList").value = targetPage;
+   	   					}
+   					}
+					xmlhttp.open("GET","handleItemDisplay.php?category="+currentCategory+"&page="+targetPage, true);
+					xmlhttp.send();
+				}
+			}
+			function loadNextPage() {
+				var currentPage=document.getElementById("pageList").value;
+				if (currentPage != "3") {
+					var currentCategory = document.getElementById("itemList").className;
+					var targetPage = Number(currentPage)+1;
+					var xmlhttp;    
+      				if (window.XMLHttpRequest){ 
+         				xmlhttp = new XMLHttpRequest();
+      				}else{ 
+         				xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+      				}
+      				xmlhttp.onreadystatechange = function(){
+      					if ( xmlhttp.readyState == 4 && xmlhttp.status ==200){
+          					txt="";
+          					json=JSON.parse(xmlhttp.responseText);
+
+          					for (i=0; i<json.items.length; i++) {
+          						txt=txt + "<li class='itemOnShelf' id='"+json.items[i]['itemID']+"'>";
+          						txt=txt + "<img src='"+json.items[i]['itemImage']+"'>";
+          						txt=txt + "<p class='item_name'>Name: "+json.items[i]['itemName']+"</p>";
+          						txt=txt + "<p class='item_price'>Price: $"+json.items[i]['itemPrice']+"</p>";
+          						txt=txt + "<p class='item_discription'>Discription: "+json.items[i]['itemDescription']+"</p>";
+                      txt=txt + "<input type='submit' onclick=\"addToCart(this);\" value='Add to Cart'>";
+              txt=txt + "</li>";
+          					}
+          					document.getElementById("itemList").innerHTML=txt;
+           					document.getElementById("totalPage").innerHTML=json.numOfPages;
+           					document.getElementById("pageList").value = targetPage;
+           					
+   	   					}
+   					}
+
+					xmlhttp.open("GET","handleItemDisplay.php?category="+currentCategory+"&page="+targetPage, true);
+					xmlhttp.send();
+				}
+			}
+			function loadSpecifiedPage() {
+				var targetPage=document.getElementById("pageList").value;
+				var currentCategory = document.getElementById("itemList").className;
+				var xmlhttp;    
+      			if (window.XMLHttpRequest){ 
+         			xmlhttp = new XMLHttpRequest();
+      			}else{ 
+         			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+      			}
+      			xmlhttp.onreadystatechange = function(){
+  					if ( xmlhttp.readyState == 4 && xmlhttp.status ==200){
+              //document.getElementById("itemList").innerHTML=xmlhttp.responseText;
+      					txt="";
+      					json=JSON.parse(xmlhttp.responseText);
+      					for (i=0; i<json.items.length; i++) {
+      						txt=txt + "<li class='itemOnShelf' id="+json.items[i]['itemID']+">";
+      						txt=txt + "<img src='"+json.items[i]['itemImage']+"'>";
+      						txt=txt + "<p class='item_name'>Name: "+json.items[i]['itemName']+"</p>";
+      						txt=txt + "<p class='item_price'>Price: $"+json.items[i]['itemPrice']+"</p>";
+      						txt=txt + "<p class='item_discription'>Discription: "+json.items[i]['itemDescription']+"</p>";
+                  txt=txt + "<input type='submit' id='addToCart' onclick=\"addToCart(this);\" value='Add to Cart'>";
+							txt=txt + "</li>";
+      					}
+      					document.getElementById("itemList").innerHTML=txt;
+      					document.getElementById("totalPage").innerHTML=json.numOfPages;
+      					
+	   				}
+				}
+				xmlhttp.open("GET","handleItemDisplay.php?category="+currentCategory+"&page="+targetPage, true);
+				xmlhttp.send();
+			}
+      function loadCartNumber() {
+        var xmlhttp;    
+            if (window.XMLHttpRequest){ 
+              xmlhttp = new XMLHttpRequest();
+            }else{ 
+              xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            xmlhttp.onreadystatechange = function(){
+              if ( xmlhttp.readyState == 4 && xmlhttp.status ==200){
+                  document.getElementById("num_of_item").innerHTML="("+xmlhttp.responseText+")";
+              }
+          }
+          xmlhttp.open("GET","handleAddToCart.php?itemID=0&updateNumber=0", true);
+          xmlhttp.send();
+        
+      }
+      function addToCart(elem) {
+        var itemID = $(elem).parent().attr("id");
+        var xmlhttp;    
+            if (window.XMLHttpRequest){ 
+              xmlhttp = new XMLHttpRequest();
+            }else{ 
+              xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            xmlhttp.onreadystatechange = function(){
+              if ( xmlhttp.readyState == 4 && xmlhttp.status ==200){
+                  document.getElementById("num_of_item").innerHTML="("+xmlhttp.responseText+")";
+              }
+          }
+          xmlhttp.open("GET","handleAddToCart.php?itemID="+itemID+"&updateNumber=1", true);
+          xmlhttp.send();
+        
+      }
+      function displayCartContent(){
+        document.getElementById("categoryDiv").style.display = "none";
+        document.getElementById("items").style.left="10px";
+        document.getElementById("items").style.top="180px";
+        var xmlhttp;    
+        if (window.XMLHttpRequest){ 
+          xmlhttp = new XMLHttpRequest();
+        }else{ 
+          xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        xmlhttp.onreadystatechange = function(){
+          if ( xmlhttp.readyState == 4 && xmlhttp.status ==200){
+            txt="";
+            txt="<p id='shoppingCartTxt'>Shopping Cart</p>";
+            txt=txt + "<span id='pricetag'>Price</span>";
+            txt=txt + "<span id='quantitytag'>Quantity</span>";
+            var totalQuantity=0;
+            var totalPrice=0;
+            json=JSON.parse(xmlhttp.responseText);
+            for (i=0; i<json.length; i++) {
+              totalQuantity=totalQuantity+parseInt(json[i]['quantity']);
+              totalPrice=totalPrice+(parseFloat(json[i]['itemPrice'])*parseInt(json[i]['quantity']));
+              totalPrice.toFixed(2);
+              txt=txt + "<li class='itemInCart' id='"+json[i]['itemID']+"'>";
+              txt=txt +"<p style='display: none' class='quantityRecord'>"+json[i]['quantity']+"</p>";
+              txt=txt + "<img src='"+json[i]['itemImage']+"'>";
+              txt=txt + "<p class='item_name'>Name: "+json[i]['itemName']+"</p>";
+              txt=txt + "<span class='item_price' id='priceCount'>$"+json[i]['itemPrice']+"</span>";
+              txt=txt + "<input type='number' onchange='updateQuantity(this);' name='quantityCount' id='quantityCount' min='1' value = '"+parseInt(json[i]['quantity'])+"'>";
+              txt=txt + "<p class='item_discription'>Discription: "+json[i]['itemDescription']+"</p>";              
+              txt=txt + "</li>";
+            }
+            document.getElementById("itemList").innerHTML=txt;
+            document.getElementById("footer").innerHTML="<span style='text-align: center;'>Cart subtotal(</span>"+"<span class='totalQuantity' style='text-align: center;'>"+totalQuantity+" item(s)): </span><span class='totalPrice' style='text-align: center;'>$"+totalPrice.toFixed(2)+"</span>"+"<div style='text-align:center'> <button type='button' onclick='checkout(this);'>Proceed to Checkout</button></div>";
+          }
+        }
+        xmlhttp.open("GET","handleCartContent.php?", true);
+        xmlhttp.send();
+		}	
+    function updateQuantity(elem) {
+      var newCount=elem.value;
+      var oldCount= $(elem).siblings(".quantityRecord").html();
+      var itemID = $(elem).parent().attr("id");
+      var updateNumber=parseInt(newCount)-parseInt(oldCount); 
+      var xmlhttp;    
+          if (window.XMLHttpRequest){ 
+            xmlhttp = new XMLHttpRequest();
+          }else{ 
+            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+          }
+          xmlhttp.onreadystatechange = function(){
+          if ( xmlhttp.readyState == 4 && xmlhttp.status ==200){
+              document.getElementById("num_of_item").innerHTML="("+xmlhttp.responseText+")";
+              displayCartContent();
+              
+          }
+      }
+      xmlhttp.open("GET","handleAddToCart.php?itemID="+itemID+"&updateNumber="+updateNumber, true);
+      xmlhttp.send();
+    }
+    function checkout(elem) {
+      var xmlhttp;    
+      var checkoutValue= $(elem).parent().siblings(".totalPrice").html();
+      var totalQuantity= $(elem).parent().siblings(".totalQuantity").html();
+          if (window.XMLHttpRequest){ 
+            xmlhttp = new XMLHttpRequest();
+          }else{ 
+            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+          }
+          xmlhttp.onreadystatechange = function(){
+          if ( xmlhttp.readyState == 4 && xmlhttp.status ==200){
+            document.getElementById("num_of_item").innerHTML="(0)";
+              document.getElementById("items").innerHTML="<p id='checkoutNumTxt'>You have successfully placed order for "+totalQuantity+"</p>"+"<p id='checkoutValueTxt'>"+checkoutValue+" paid</p>";
+              var newContent = document.createElement("a");
+              newContent.innerHTML="continue browsing&gt";
+              newContent.setAttribute("id","browsingTxt");
+              newContent.setAttribute("onclick","location.reload()");
+              document.getElementById("items").appendChild(newContent);
+          }
+      }
+      xmlhttp.open("GET","handleAddToCart.php?itemID="+"-1"+"&updateNumber="+"0", true);
+      xmlhttp.send();
+    }
+		</script>
+	</body>
+</html>
